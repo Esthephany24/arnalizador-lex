@@ -143,7 +143,7 @@ int main(){
     char token[10],projectResorce[1000];
     FILE *fp;
     
-    fp=fopen("./test.txt","r");
+    fp=fopen("class.txt","r");
     
     fgets(projectResorce,1000,fp);// Obtener el contenido del archivo a la matriz
     cout<<"CODIGO FUENTE :\n"<<projectResorce<<endl;
