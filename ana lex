@@ -1,0 +1,167 @@
+#include<stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <fstream>  // biblioteca de flujo de archivos
+#include <iostream>
+using namespace std;
+
+char palabrareservada[34][20]={ // Codificación de palabra reservada 1-
+    "include","define","auto", "break", "case", "char", "const", "continue",
+    "default", "do", "double", "else", "enum", "extern",
+    "float", "for", "goto", "if", "int", "long",
+    "register", "return", "short", "signed", "sizeof", "static",
+    "struct", "switch", "typedef", "union", "unsigned", "void",
+    "volatile", "while"
+};
+
+char operadores[25][10]={  // 
+    "+", "-",  "*", "/","=", "&", 
+	 "<", ">", ";"  ,   ","  ,  "(" , ")", 
+	 "^","#",  "|", "%", "~", "[", "]", "{",
+    "}", ".", ":", "!", "?"
+};
+
+static char multi_operadores[24][10]={  // Codificación de operador de doble byte 57-71
+    "++","--","==","+=", "-=","*=","/=","%=","^=","<=",">=","<<",
+    "<<=",">>=",">>","&&","||","!=","\\","\?",
+    "\"", "\'","##","->"
+};
+
+char coment_lim[5][10]={
+	 "//","/*","*/", "\n","\t"
+};
+
+
+void filterResorce ()
+
+int reservada(char token[]){//para determinar si es una palabra reservada
+    for(int i=0; i<sizeof(palabrareservada)/20;i++){
+        if(strcmp(token,palabrareservada[i])==0){
+            return i;
+        }
+    }
+    return 100;
+}
+
+int operador(char caracter){//para determinar si es un operador
+    for(int i=0;i< sizeof(operadores)/10;i++){
+        if(caracter == operadores[i][0]){
+            return i;
+        }
+    }
+    return -1;
+}
+
+int letra(char caracter){ // para determinar cualquier letra
+	if((caracter >= 'a' && caracter <= 'z') || (caracter>= 'A' && caracter <= 'Z')) {return 11;}
+	return 0;
+}
+
+int digito( char caracter){ // para determinar si es un numero
+	 if((caracter >='0' && caracter <='9')){return 01;}
+    return 0;
+}
+
+void ret( int  &pProject){
+	pProject--;
+}
+
+int coment(char caracter){//para determinar si es un comentario o limitacion
+    for(int i=0; i<sizeof(coment_lim)/10;i++){
+        if(caracter = coment_lim[i][0]){
+            return i;
+        }
+    }
+    return -2;
+}
+
+//lee una palabra a la vez
+
+void leer(int& a,int &pProject,char token[],char projectResorce[]){
+	a=0;
+    char caracter, V_OP[2]={"\0"};
+    int t_oken=0;
+	int i=0;
+	
+    caracter = projectResorce[pProject++];
+    while(caracter ==' '){ 
+        ch=projectResorce[pProject++];//limpipr los expaci9os que esten antes de la plabra
+    }
+    
+    for (i = 0; i<10; i++){// Limpia el token 
+        token[i] = '\0';
+    }
+    if( letra(caracter)){  // reconocimiento de la palabra que este reservada
+        while(letra(caracter)||digito(ch)){
+            token[t_oken++]= caracter;
+            caracter =projectResorce[pProject++];
+        }
+        ret(pProject);
+        a=reservada (token);
+//        cout<<"sin toquen  " <<token<<a<<endl;
+        if(a ==100){ // comprueba si la palabra es un identificador reservado
+            return ;
+        }
+        a+=1;
+        return ;  // retorna el código de categoría
+    }
+    
+    
+    else if((a=operador(caracter))!=-1){// obtener el valor relativo del código 
+        token[t_oken++]=caracter;
+        V_OP[0]=caracter;    // Almacena el contenido
+        V_OP[1]=projectResorce[pProject++];
+        for(i=0;i<sizeof(multi_operadores)/10;i++){// 
+            if(strcmp(V_OP,multi_operadores[i])==0){
+                a=57+i;
+                token[t_oken++]=caracter;
+                return ;
+            }
+        }
+        ret(pProject);
+        a=33+a;
+        return ;
+    }
+    
+    else if(digito(caracter)){ // identifica y reconoce la constante
+        while(digito (caracter)){
+            token[t_oken++]=caracter;
+            caracter =projectResorce[pProject++];
+        }
+        a=99; // retorna el código de categoría
+        ret(pProject);
+        return ;
+    }
+    
+    else if(caracter =='$'){a=0;}
+    else{a=-1;}
+    return ;
+}
+
+int main(){
+    int pProject=0,a=-1;
+    char token[10],projectResorce[1000];
+    FILE *fp;
+    
+    fp=fopen("./test.txt","r");
+    
+    fgets(projectResorce,1000,fp);// Obtener el contenido del archivo a la matriz
+    cout<<"CODIGO FUENTE :\n"<<projectResorce<<endl;
+    
+    pProject=0; // Juzgar desde cero
+    while(a!=0){ // Salida binaria
+        leer(a,pProject,token,projectResorce);
+        if(a==99){
+            cout<<"<constante,"<<token<<">"<<endl;
+        }else if(a==100){
+            cout<<"<identificador",<<token<<">"<<endl;
+        }else if(a>=1&& a<=71){
+            cout<<"<"<<token<<",-->  ("<<a<<")"<<endl;
+        }else if(a==-1){
+            cout<<"EEROR DE CODIGO!\n"<<endl;
+            break;
+        }
+        else{ cout<<"SE TERMINO LA COMPILACION!\n"<<endl; }
+    }
+    return 0;
+}
